@@ -1,0 +1,29 @@
+Mysql:
+  user: root
+  password: 123456
+  addr: "127.0.0.1"
+  port: 3306
+  database: neuronet
+  connMaxLifetime: 60
+  maxIdleConn: 60
+  maxOpenConn: 10
+  logLevel: 4 # GORM log level, 1: silent, 2:error, 3:warn, 4:info
+
+Redis:
+  addr: "127.0.0.1"
+  port: 6379
+  password: ""
+  db: "0"
+  maxRetries: 3
+  poolSize: 10
+
+log:
+  disableCaller: true # 是否开启 caller，如果开启会在日志中显示调用日志所在的文件和行号
+  disableStacktrace: false # 是否禁止在 panic 及以上级别打印堆栈信息
+  level: debug # 指定日志级别，可选值：debug, info, warn, error, dpanic, panic, fatal
+  format: json # 指定日志显示格式，可选值：console, json
+  outputPaths: [logs/neuronetserver.log] # 指定日志输出位置，多个输出，用 `逗号 + 空格` 分开。stdout：标准输出，
+
+server:
+  port: 8100
+  address: "0.0.0.0"
