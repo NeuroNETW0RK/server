@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"NeuroNET/internal/pkg/code"
-	"NeuroNET/pkg/errors"
 	"github.com/dgrijalva/jwt-go"
+	"neuronet/internal/pkg/code"
+	"neuronet/pkg/errors"
 	"time"
 )
 

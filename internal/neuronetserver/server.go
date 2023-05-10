@@ -1,11 +1,11 @@
 package neuronetserver
 
 import (
-	"NeuroNET/internal/neuronetserver/options"
-	"NeuroNET/internal/neuronetserver/router"
-	"NeuroNET/pkg/log"
-	"NeuroNET/pkg/shutdown"
-	"NeuroNET/pkg/shutdown/shutdownmanagers/posixsignal"
+	"neuronet/internal/neuronetserver/options"
+	"neuronet/internal/neuronetserver/router"
+	"neuronet/pkg/log"
+	"neuronet/pkg/shutdown"
+	"neuronet/pkg/shutdown/shutdownmanagers/posixsignal"
 	"os"
 	"os/signal"
 	"syscall"

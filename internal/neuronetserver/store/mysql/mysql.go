@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"NeuroNET/internal/neuronetserver/store"
+	"neuronet/internal/neuronetserver/store"
 )
 
 var datastore *DBDatastore
@@ -18,6 +18,18 @@ func NewMysqlDatastore() *DBDatastore {
 }
 
 type DBDatastore struct {
+}
+
+func (d *DBDatastore) Task() store.ITask {
+	return newTask()
+}
+
+func (d *DBDatastore) TaskResource() store.ITaskResource {
+	return newTaskResource()
+}
+
+func (d *DBDatastore) TaskImage() store.ITaskImage {
+	return newTaskImage()
 }
 
 func (d *DBDatastore) UserRole() store.IUserRole {

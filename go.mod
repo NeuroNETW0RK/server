@@ -1,4 +1,4 @@
-module NeuroNET
+module neuronet
 
 go 1.18
 

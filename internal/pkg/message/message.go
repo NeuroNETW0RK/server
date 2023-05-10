@@ -1,9 +1,9 @@
 package message
 
 import (
-	"NeuroNET/pkg/errors"
-	"NeuroNET/pkg/log"
 	"net/http"
+	"neuronet/pkg/errors"
+	"neuronet/pkg/log"
 
 	"github.com/gin-gonic/gin"
 )

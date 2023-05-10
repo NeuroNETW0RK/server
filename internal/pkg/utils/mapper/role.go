@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	v1 "NeuroNET/internal/neuronetserver/dto/v1"
-	"NeuroNET/internal/neuronetserver/model"
+	v1 "neuronet/internal/neuronetserver/dto/v1"
+	"neuronet/internal/neuronetserver/model"
 )
 
 func RoleBoMapper(role model.RoleBo) v1.RoleDetailReply {

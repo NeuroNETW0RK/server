@@ -1,17 +1,17 @@
 package options
 
 import (
-	"NeuroNET/internal/neuronetserver/configs"
-	"NeuroNET/internal/neuronetserver/router/interceptor"
-	"NeuroNET/internal/neuronetserver/store"
-	"NeuroNET/internal/neuronetserver/store/mysql"
-	"NeuroNET/internal/pkg/core"
-	"NeuroNET/pkg/db"
-	"NeuroNET/pkg/log"
-	cache "NeuroNET/pkg/redis"
 	"fmt"
 	"github.com/go-redis/redis/v7"
 	"gorm.io/gorm"
+	"neuronet/internal/neuronetserver/configs"
+	"neuronet/internal/neuronetserver/router/interceptor"
+	"neuronet/internal/neuronetserver/store"
+	"neuronet/internal/neuronetserver/store/mysql"
+	"neuronet/internal/pkg/core"
+	"neuronet/pkg/db"
+	"neuronet/pkg/log"
+	cache "neuronet/pkg/redis"
 )
 
 type Options struct {

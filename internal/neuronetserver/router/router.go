@@ -1,12 +1,12 @@
 package router
 
 import (
-	"NeuroNET/internal/neuronetserver/controller/v1/permission"
-	"NeuroNET/internal/neuronetserver/controller/v1/role"
-	"NeuroNET/internal/neuronetserver/controller/v1/user"
-	"NeuroNET/internal/neuronetserver/options"
-	"NeuroNET/internal/pkg/message"
 	"github.com/gin-gonic/gin"
+	"neuronet/internal/neuronetserver/controller/v1/permission"
+	"neuronet/internal/neuronetserver/controller/v1/role"
+	"neuronet/internal/neuronetserver/controller/v1/user"
+	"neuronet/internal/neuronetserver/options"
+	"neuronet/internal/pkg/message"
 	"time"
 )
 

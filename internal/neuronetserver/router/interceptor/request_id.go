@@ -1,9 +1,9 @@
 package interceptor
 
 import (
-	"NeuroNET/pkg/log"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
+	"neuronet/pkg/log"
 )
 
 func (i *interceptor) RequestID() gin.HandlerFunc {

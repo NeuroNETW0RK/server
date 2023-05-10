@@ -1,12 +1,12 @@
 package mysql
 
 import (
-	"NeuroNET/internal/neuronetserver/model"
-	"NeuroNET/internal/neuronetserver/store"
-	"NeuroNET/internal/pkg/code"
-	"NeuroNET/pkg/errors"
 	"context"
 	"gorm.io/gorm"
+	"neuronet/internal/neuronetserver/model"
+	"neuronet/internal/neuronetserver/store"
+	"neuronet/internal/pkg/code"
+	"neuronet/pkg/errors"
 )
 
 var _ store.IPermission = (*permission)(nil)
@@ -16,14 +16,6 @@ func newPermission() *permission {
 }
 
 type permission struct {
-}
-
-func (s *permission) Updates(c context.Context, db *gorm.DB, permission *model.Permission, opts ...store.DBOptions) (err error) {
-	err = db.WithContext(c).Scopes(opts...).Updates(&permission).Error
-	if err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
-	}
-	return
 }
 
 func (s *permission) Create(c context.Context, db *gorm.DB, permission *model.Permission) (err error) {
@@ -81,4 +73,12 @@ func (s *permission) WithResource(resource string) store.DBOptions {
 	return func(db *gorm.DB) *gorm.DB {
 		return db.Where("resource = ?", resource)
 	}
+}
+
+func (s *permission) Updates(c context.Context, db *gorm.DB, permission *model.Permission, opts ...store.DBOptions) (err error) {
+	err = db.WithContext(c).Scopes(opts...).Updates(&permission).Error
+	if err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return
 }

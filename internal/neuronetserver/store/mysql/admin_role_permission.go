@@ -1,12 +1,12 @@
 package mysql
 
 import (
-	"NeuroNET/internal/neuronetserver/model"
-	"NeuroNET/internal/neuronetserver/store"
-	"NeuroNET/internal/pkg/code"
-	"NeuroNET/pkg/errors"
 	"context"
 	"gorm.io/gorm"
+	"neuronet/internal/neuronetserver/model"
+	"neuronet/internal/neuronetserver/store"
+	"neuronet/internal/pkg/code"
+	"neuronet/pkg/errors"
 )
 
 var _ store.IRolePermission = (*rolePermission)(nil)

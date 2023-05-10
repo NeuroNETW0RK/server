@@ -1,13 +1,13 @@
 package core
 
 import (
-	"NeuroNET/pkg/errors"
-	"NeuroNET/pkg/log"
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	cors "github.com/rs/cors/wrapper/gin"
 	"net/http"
+	"neuronet/pkg/errors"
+	"neuronet/pkg/log"
 	"time"
 )
 

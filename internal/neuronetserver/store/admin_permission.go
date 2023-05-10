@@ -1,9 +1,9 @@
 package store
 
 import (
-	"NeuroNET/internal/neuronetserver/model"
 	"context"
 	"gorm.io/gorm"
+	"neuronet/internal/neuronetserver/model"
 )
 
 type IPermission interface {

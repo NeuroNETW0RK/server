@@ -1,12 +1,12 @@
 package mysql
 
 import (
-	"NeuroNET/internal/neuronetserver/model"
-	"NeuroNET/internal/neuronetserver/store"
-	"NeuroNET/internal/pkg/code"
-	"NeuroNET/pkg/errors"
 	"context"
 	"gorm.io/gorm"
+	"neuronet/internal/neuronetserver/model"
+	"neuronet/internal/neuronetserver/store"
+	"neuronet/internal/pkg/code"
+	"neuronet/pkg/errors"
 )
 
 var _ store.IRole = (*role)(nil)
@@ -16,14 +16,6 @@ func newRole() *role {
 }
 
 type role struct {
-}
-
-func (s *role) Updates(c context.Context, db *gorm.DB, role *model.Role, opts ...store.DBOptions) (err error) {
-	err = db.WithContext(c).Scopes(opts...).Updates(&role).Error
-	if err != nil {
-		return errors.WithCode(code.ErrDatabase, err.Error())
-	}
-	return
 }
 
 func (s *role) Create(c context.Context, db *gorm.DB, role *model.Role) (err error) {
@@ -71,6 +63,14 @@ func (s *role) DeleteBy(c context.Context, db *gorm.DB, opts ...store.DBOptions)
 
 func (s *role) UpdateColumn(c context.Context, db *gorm.DB, name string, value interface{}, opts ...store.DBOptions) (err error) {
 	err = db.WithContext(c).Scopes(opts...).Model(&model.Role{}).UpdateColumn(name, value).Error
+	if err != nil {
+		return errors.WithCode(code.ErrDatabase, err.Error())
+	}
+	return
+}
+
+func (s *role) Updates(c context.Context, db *gorm.DB, role *model.Role, opts ...store.DBOptions) (err error) {
+	err = db.WithContext(c).Scopes(opts...).Updates(&role).Error
 	if err != nil {
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}

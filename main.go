@@ -1,8 +1,8 @@
 package main
 
 import (
-	"NeuroNET/internal/neuronetserver"
-	"NeuroNET/internal/neuronetserver/configs"
+	"neuronet/internal/neuronetserver"
+	"neuronet/internal/neuronetserver/configs"
 )
 
 func main() {

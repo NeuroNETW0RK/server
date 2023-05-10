@@ -1,9 +1,9 @@
 package mysql
 
 import (
-	"NeuroNET/internal/neuronetserver/store"
 	"fmt"
 	"gorm.io/gorm"
+	"neuronet/internal/neuronetserver/store"
 )
 
 func (d *DBDatastore) WithSelect(columns ...string) store.DBOptions {

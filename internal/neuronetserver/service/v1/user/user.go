@@ -1,20 +1,20 @@
 package user
 
 import (
-	"NeuroNET/internal/neuronetserver/configs"
-	v1 "NeuroNET/internal/neuronetserver/dto/v1"
-	"NeuroNET/internal/neuronetserver/model"
-	"NeuroNET/internal/neuronetserver/store"
-	"NeuroNET/internal/pkg/code"
-	auth "NeuroNET/internal/pkg/jwt"
-	"NeuroNET/internal/pkg/utils/mapper"
-	userutils "NeuroNET/internal/pkg/utils/user"
-	"NeuroNET/pkg/errors"
-	"NeuroNET/pkg/log"
 	"crypto/sha512"
 	"github.com/anaskhan96/go-password-encoder"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"neuronet/internal/neuronetserver/configs"
+	v1 "neuronet/internal/neuronetserver/dto/v1"
+	"neuronet/internal/neuronetserver/model"
+	"neuronet/internal/neuronetserver/store"
+	"neuronet/internal/pkg/code"
+	auth "neuronet/internal/pkg/jwt"
+	"neuronet/internal/pkg/utils/mapper"
+	userutils "neuronet/internal/pkg/utils/user"
+	"neuronet/pkg/errors"
+	"neuronet/pkg/log"
 
 	"strings"
 )

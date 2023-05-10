@@ -8,4 +8,8 @@ type Factory interface {
 	Permission() IPermission
 	UserRole() IUserRole
 	RolePermission() IRolePermission
+
+	Task() ITask
+	TaskResource() ITaskResource
+	TaskImage() ITaskImage
 }

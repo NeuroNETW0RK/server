@@ -10,7 +10,7 @@ When ShutdownFinish is called it exits with os.Exit(0)
 package posixsignal
 
 import (
-	"NeuroNET/pkg/shutdown"
+	"neuronet/pkg/shutdown"
 	"os"
 	"os/signal"
 	"syscall"

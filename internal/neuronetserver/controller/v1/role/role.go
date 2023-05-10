@@ -1,15 +1,15 @@
 package role
 
 import (
-	v1 "NeuroNET/internal/neuronetserver/dto/v1"
-	"NeuroNET/internal/neuronetserver/service/v1/role"
-	"NeuroNET/internal/neuronetserver/store"
-	"NeuroNET/internal/pkg/code"
-	"NeuroNET/internal/pkg/message"
-	"NeuroNET/pkg/errors"
-	"NeuroNET/pkg/log"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	v1 "neuronet/internal/neuronetserver/dto/v1"
+	"neuronet/internal/neuronetserver/service/v1/role"
+	"neuronet/internal/neuronetserver/store"
+	"neuronet/internal/pkg/code"
+	"neuronet/internal/pkg/message"
+	"neuronet/pkg/errors"
+	"neuronet/pkg/log"
 )
 
 var _ Controller = (*controller)(nil)

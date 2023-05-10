@@ -5,7 +5,7 @@
 package posixsignal
 
 import (
-	"NeuroNET/pkg/shutdown"
+	"neuronet/pkg/shutdown"
 	"syscall"
 	"testing"
 	"time"

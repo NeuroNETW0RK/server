@@ -1,8 +1,8 @@
 package code
 
 import (
-	"NeuroNET/pkg/errors"
 	"net/http"
+	"neuronet/pkg/errors"
 
 	"github.com/novalagung/gubrak"
 )

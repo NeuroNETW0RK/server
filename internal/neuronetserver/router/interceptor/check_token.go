@@ -1,12 +1,12 @@
 package interceptor
 
 import (
-	"NeuroNET/internal/neuronetserver/model"
-	"NeuroNET/internal/pkg/code"
-	auth "NeuroNET/internal/pkg/jwt"
-	"NeuroNET/internal/pkg/message"
-	"NeuroNET/pkg/errors"
 	"github.com/gin-gonic/gin"
+	"neuronet/internal/neuronetserver/model"
+	"neuronet/internal/pkg/code"
+	auth "neuronet/internal/pkg/jwt"
+	"neuronet/internal/pkg/message"
+	"neuronet/pkg/errors"
 	"strings"
 )
 
