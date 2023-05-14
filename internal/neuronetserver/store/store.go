@@ -11,5 +11,7 @@ type Factory interface {
 
 	Task() ITask
 	TaskResource() ITaskResource
-	TaskImage() ITaskImage
+	Image() IImage
+
+	Cluster() ICluster
 }

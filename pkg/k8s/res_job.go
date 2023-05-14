@@ -1,4 +1,4 @@
-package bykubernetes
+package k8s
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 var _ IJobAction = (*jobs)(nil)
 
 type IJob interface {
-	Jobs() IJobAction
+	Jobs(clusterName string) IJobAction
 }
 
 type IJobAction interface {
@@ -39,6 +39,9 @@ func newJobs(c kubernetes.Interface, informerStore informer.Storer) *jobs {
 }
 
 func (c *jobs) Create(ctx context.Context, job *batchv1.Job, options meta.CreateOptions) error {
+	if c.client == nil {
+		return errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
 	_, err := c.client.BatchV1().
 		Jobs(options.Namespace).
 		Create(ctx, job, metav1.CreateOptions{})
@@ -53,6 +56,9 @@ func (c *jobs) Create(ctx context.Context, job *batchv1.Job, options meta.Create
 }
 
 func (c *jobs) Delete(ctx context.Context, deleteOptions meta.DeleteOptions) error {
+	if c.client == nil {
+		return errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
 	propagationPolicy := metav1.DeletePropagationBackground
 	if err := c.client.BatchV1().
 		Jobs(deleteOptions.Namespace).
@@ -64,11 +70,16 @@ func (c *jobs) Delete(ctx context.Context, deleteOptions meta.DeleteOptions) err
 }
 
 func (c *jobs) Get(ctx context.Context, getOptions meta.GetOptions) (*batchv1.Job, error) {
-
+	if c.informer == nil {
+		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+	}
 	return c.informer.InformerJobs().Get(ctx, getOptions)
 }
 
 func (c *jobs) List(ctx context.Context, options meta.ListOptions) ([]*batchv1.Job, error) {
+	if c.informer == nil {
+		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+	}
 	var (
 		list []*batchv1.Job
 		err  error

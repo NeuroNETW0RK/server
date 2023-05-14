@@ -1,4 +1,4 @@
-package bykubernetes
+package k8s
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 var _ IServiceAction = (*services)(nil)
 
 type IService interface {
-	Services() IServiceAction
+	Services(clusterName string) IServiceAction
 }
 
 type IServiceAction interface {
@@ -39,6 +39,9 @@ func newServices(c kubernetes.Interface, informerStore informer.Storer) *service
 }
 
 func (c *services) List(ctx context.Context, options meta.ListOptions) ([]*v1.Service, error) {
+	if c.informer == nil {
+		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+	}
 	var (
 		list []*v1.Service
 		err  error
@@ -61,6 +64,9 @@ func (c *services) List(ctx context.Context, options meta.ListOptions) ([]*v1.Se
 }
 
 func (c *services) Create(ctx context.Context, service *v1.Service, options meta.CreateOptions) error {
+	if c.client == nil {
+		return errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
 	if _, err := c.client.CoreV1().
 		Services(options.Namespace).
 		Create(ctx, service, metav1.CreateOptions{}); err != nil {
@@ -74,7 +80,9 @@ func (c *services) Create(ctx context.Context, service *v1.Service, options meta
 }
 
 func (c *services) Update(ctx context.Context, service *v1.Service, options meta.UpdateOptions) error {
-
+	if c.client == nil {
+		return errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
 	oldService, err := c.Get(ctx, meta.GetOptions{
 		Namespace:  options.Namespace,
 		ObjectName: options.ObjectName,
@@ -93,6 +101,9 @@ func (c *services) Update(ctx context.Context, service *v1.Service, options meta
 }
 
 func (c *services) Delete(ctx context.Context, deleteOptions meta.DeleteOptions) error {
+	if c.client == nil {
+		return errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
 	err := c.client.CoreV1().
 		Services(deleteOptions.Namespace).
 		Delete(ctx, deleteOptions.ObjectName, metav1.DeleteOptions{})
@@ -107,5 +118,8 @@ func (c *services) Delete(ctx context.Context, deleteOptions meta.DeleteOptions)
 }
 
 func (c *services) Get(ctx context.Context, getOptions meta.GetOptions) (*v1.Service, error) {
+	if c.informer == nil {
+		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+	}
 	return c.informer.InformerServices().Get(ctx, getOptions)
 }

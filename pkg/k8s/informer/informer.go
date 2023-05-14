@@ -20,14 +20,6 @@ func Get() *Store {
 	return store
 }
 
-func Register(stopCh <-chan struct{}, client kubernetes.Interface) error {
-	err := NewInformerStore(stopCh, client)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 type Storer interface {
 	Pod
 	Deployment
@@ -50,7 +42,7 @@ type Store struct {
 	informerFactory     informers.SharedInformerFactory
 }
 
-func NewInformerStore(stopCh <-chan struct{}, clients kubernetes.Interface) error {
+func NewInformerStore(stopCh <-chan struct{}, clients kubernetes.Interface) (*Store, error) {
 	factory := informers.NewSharedInformerFactory(clients, time.Second*30)
 	gvrs := []schema.GroupVersionResource{
 		{Group: "", Version: "v1", Resource: "pods"},
@@ -68,7 +60,7 @@ func NewInformerStore(stopCh <-chan struct{}, clients kubernetes.Interface) erro
 	for _, v := range gvrs {
 		_, err := factory.ForResource(v)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 	byIndex := index.New(factory)
@@ -89,7 +81,7 @@ func NewInformerStore(stopCh <-chan struct{}, clients kubernetes.Interface) erro
 		informerFactory:     factory,
 	}
 
-	return nil
+	return store, nil
 }
 
 func (i *Store) InformerDeployments() DeploymentAction {

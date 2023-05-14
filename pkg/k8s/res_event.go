@@ -1,4 +1,4 @@
-package bykubernetes
+package k8s
 
 import (
 	"context"
@@ -6,6 +6,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"neuronet/internal/pkg/code"
+	"neuronet/pkg/errors"
 	apiv1 "neuronet/pkg/k8s/api/v1"
 	"neuronet/pkg/k8s/meta"
 )
@@ -13,7 +15,7 @@ import (
 var _ IEventAction = (*events)(nil)
 
 type IEvent interface {
-	Events() IEventAction
+	Events(clusterName string) IEventAction
 }
 
 type IEventAction interface {
@@ -32,6 +34,9 @@ func newEvents(c kubernetes.Interface) *events {
 }
 
 func (c *events) List(ctx context.Context, options meta.ListOptions) ([]v1.Event, error) {
+	if c.client == nil {
+		return nil, errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
 	event, err := c.client.CoreV1().
 		Events(options.Namespace).
 		List(ctx, metav1.ListOptions{})
@@ -43,6 +48,9 @@ func (c *events) List(ctx context.Context, options meta.ListOptions) ([]v1.Event
 }
 
 func (c *events) Get(ctx context.Context, args apiv1.Event, options meta.GetOptions) ([]v1.Event, error) {
+	if c.client == nil {
+		return nil, errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
 	event, err := c.client.CoreV1().
 		Events(options.Namespace).
 		List(ctx, metav1.ListOptions{

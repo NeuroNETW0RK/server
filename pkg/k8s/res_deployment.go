@@ -1,4 +1,4 @@
-package bykubernetes
+package k8s
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 var _ IDeploymentAction = (*deployments)(nil)
 
 type IDeployment interface {
-	Deployments() IDeploymentAction
+	Deployments(clusterName string) IDeploymentAction
 }
 
 type IDeploymentAction interface {
@@ -66,6 +66,9 @@ func (d *deployments) Restart(ctx context.Context, options meta.RestartOptions) 
 }
 
 func (d *deployments) Create(ctx context.Context, deployment *v1.Deployment, options meta.CreateOptions) (err error) {
+	if d.client == nil {
+		return errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
 	_, err = d.client.AppsV1().Deployments(options.Namespace).Create(ctx, deployment, metav1.CreateOptions{})
 	if err != nil {
 		if k8serror.IsAlreadyExists(err) {
@@ -77,6 +80,9 @@ func (d *deployments) Create(ctx context.Context, deployment *v1.Deployment, opt
 }
 
 func (d *deployments) Update(ctx context.Context, deployment *v1.Deployment, options meta.UpdateOptions) (err error) {
+	if d.client == nil {
+		return errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
 	_, err = d.client.AppsV1().
 		Deployments(options.Namespace).
 		Update(ctx, deployment, metav1.UpdateOptions{})
@@ -85,6 +91,10 @@ func (d *deployments) Update(ctx context.Context, deployment *v1.Deployment, opt
 }
 
 func (d *deployments) Delete(ctx context.Context, options meta.DeleteOptions) (err error) {
+	if d.client == nil {
+		return errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
+
 	err = d.client.AppsV1().Deployments(options.Namespace).Delete(ctx, options.ObjectName, metav1.DeleteOptions{})
 	if err != nil {
 		if k8serror.IsNotFound(err) {
@@ -96,6 +106,10 @@ func (d *deployments) Delete(ctx context.Context, options meta.DeleteOptions) (e
 }
 
 func (d *deployments) List(ctx context.Context, options meta.ListOptions) ([]*v1.Deployment, error) {
+	if d.informer == nil {
+		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+	}
+
 	var (
 		list []*v1.Deployment
 		err  error
@@ -125,5 +139,8 @@ func (d *deployments) List(ctx context.Context, options meta.ListOptions) ([]*v1
 }
 
 func (d *deployments) Get(ctx context.Context, options meta.GetOptions) (*v1.Deployment, error) {
+	if d.informer == nil {
+		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+	}
 	return d.informer.InformerDeployments().Get(ctx, options)
 }

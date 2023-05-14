@@ -1,4 +1,4 @@
-package bykubernetes
+package k8s
 
 import (
 	"context"
@@ -22,7 +22,7 @@ import (
 var _ IPodAction = (*pods)(nil)
 
 type IPod interface {
-	Pods() IPodAction
+	Pods(clusterName string) IPodAction
 }
 
 type IPodAction interface {
@@ -52,6 +52,9 @@ func (p *pods) List(ctx context.Context, options meta.ListOptions) ([]*v1.Pod, e
 		list []*v1.Pod
 		err  error
 	)
+	if p.informer == nil {
+		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+	}
 
 	if options.Label != "" {
 		list, err = p.informer.InformerPods().ListByLabel(ctx, options.Namespace, options.Label)
@@ -73,6 +76,10 @@ func (p *pods) Top(ctx context.Context, options meta.TopOptions) (*apiv1.TopPod,
 	var (
 		memory, cpu int64
 	)
+
+	if p.metricsClient == nil {
+		return nil, errors.WithCode(code.ErrInternalServer, "metricsClient is nil")
+	}
 
 	podTop := new(apiv1.TopPod)
 	metrics, err := p.metricsClient.MetricsV1beta1().PodMetricses(options.Namespace).Get(ctx, options.ObjectName, metav1.GetOptions{})
@@ -96,10 +103,16 @@ func (p *pods) Top(ctx context.Context, options meta.TopOptions) (*apiv1.TopPod,
 }
 
 func (p *pods) Get(ctx context.Context, options meta.GetOptions) (*v1.Pod, error) {
+	if p.informer == nil {
+		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+	}
 	return p.informer.InformerPods().Get(ctx, options)
 }
 
 func (p *pods) Logs(ctx context.Context, w http.ResponseWriter, r *http.Request, options meta.LogOptions) error {
+	if p.client == nil {
+		return errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
 
 	opts := &v1.PodLogOptions{
 		Follow:    true,
@@ -133,6 +146,9 @@ func (p *pods) Logs(ctx context.Context, w http.ResponseWriter, r *http.Request,
 }
 
 func (p *pods) Command(ctx context.Context, w http.ResponseWriter, r *http.Request, webShellOptions *meta.TerminalOptions, kubeconfigPath string) error {
+	if p.client == nil {
+		return errors.WithCode(code.ErrInternalServer, "client is nil")
+	}
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 	if err != nil {
 		return err

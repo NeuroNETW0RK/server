@@ -1,58 +1,79 @@
-package bykubernetes
+package k8s
 
 import (
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/metrics/pkg/client/clientset/versioned"
-	"neuronet/pkg/log"
+	"neuronet/pkg/k8s/informer"
+	"sync"
 )
 
-type Options struct {
-	KubeConfigPath string
+var clusterSets IClusterSet
+
+func GetClusterSets() IClusterSet {
+	return clusterSets
 }
 
-type IClientSet interface {
-	GetKubeConfigPath() string
-	GetClient() *kubernetes.Clientset
-	GetMetricsClient() *versioned.Clientset
+type ClientSets struct {
+	K8sClient      kubernetes.Interface
+	MetricsClient  versioned.Interface
+	InformerClient informer.Storer
 }
 
-var _ IClientSet = (*ClientSet)(nil)
-
-func NewClientSet(opt Options) *ClientSet {
-	return &ClientSet{kubeConfigPath: opt.KubeConfigPath}
+type IClusterSet interface {
+	Add(clusterName string, clientSets *ClientSets)
+	Update(clusterName string, clientSets *ClientSets)
+	Delete(clusterName string)
+	Get(clusterName string) *ClientSets
+	List() map[string]*ClientSets
 }
 
-type ClientSet struct {
-	kubeConfigPath string
+var _ IClusterSet = (*ClusterSet)(nil)
+
+func NewClusterSet() *ClusterSet {
+	return &ClusterSet{clientSets: map[string]*ClientSets{}}
 }
 
-func (c *ClientSet) GetKubeConfigPath() string {
-	return c.kubeConfigPath
+type ClusterSet struct {
+	lock       sync.RWMutex
+	clientSets map[string]*ClientSets
 }
 
-func (c *ClientSet) GetClient() *kubernetes.Clientset {
-	config, err := clientcmd.BuildConfigFromFlags("", c.kubeConfigPath)
-	if err != nil {
-		log.Panicf("Can't create clientSet %v", err)
+func (c *ClusterSet) Add(clusterName string, clientSets *ClientSets) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	c.clientSets[clusterName] = clientSets
+}
+
+func (c *ClusterSet) Update(clusterName string, clientSets *ClientSets) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	c.clientSets[clusterName] = clientSets
+}
+
+func (c *ClusterSet) Delete(clusterName string) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	if _, ok := c.clientSets[clusterName]; ok {
+		delete(c.clientSets, clusterName)
 	}
-
-	clientSet, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		log.Panicf("Can't create clientSet %v", err)
-	}
-	return clientSet
 }
 
-func (c *ClientSet) GetMetricsClient() *versioned.Clientset {
-	config, err := clientcmd.BuildConfigFromFlags("", c.kubeConfigPath)
-	if err != nil {
-		log.Panicf("Can't create clientSet %v", err)
-	}
+func (c *ClusterSet) Get(clusterName string) *ClientSets {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 
-	clientSet, err := versioned.NewForConfig(config)
-	if err != nil {
-		log.Panicf("Can't create clientSet %v", err)
+	item, exists := c.clientSets[clusterName]
+	if !exists {
+		return nil
 	}
-	return clientSet
+	return item
+}
+
+func (c *ClusterSet) List() map[string]*ClientSets {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	return c.clientSets
 }

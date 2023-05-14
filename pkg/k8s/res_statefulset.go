@@ -1,4 +1,4 @@
-package bykubernetes
+package k8s
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 var _ IStatefulSetAction = (*statefulSets)(nil)
 
 type IStatefulSet interface {
-	StatefulSets() IStatefulSetAction
+	StatefulSets(clusterName string) IStatefulSetAction
 }
 
 type IStatefulSetAction interface {

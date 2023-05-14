@@ -8,8 +8,8 @@ const (
 	// ErrSuccess - 200: OK.
 	ErrSuccess int = iota + 100001
 
-	// ErrUnknown - 500: Internal server error.
-	ErrUnknown
+	// ErrInternalServer - 500: Internal server error.
+	ErrInternalServer
 
 	// ErrBind - 400: Error occurred while binding the request body to the struct.
 	ErrBind
