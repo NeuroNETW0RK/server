@@ -1,0 +1,6 @@
+.idea
+tmp
+logs
+go.sum
+output
+.DS_Store
