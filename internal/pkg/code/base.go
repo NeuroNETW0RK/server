@@ -89,4 +89,6 @@ const (
 	ErrDataNotFound int = iota + 100401
 	// ErrDataExisted - 200: Data existed.
 	ErrDataExisted
+	// ErrClusterNotFound - 200: Cluster not found.
+	ErrClusterNotFound
 )

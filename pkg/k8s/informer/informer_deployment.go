@@ -8,7 +8,6 @@ import (
 	appsinformers "k8s.io/client-go/informers/apps/v1"
 	"neuronet/internal/pkg/code"
 	"neuronet/pkg/errors"
-	"neuronet/pkg/k8s/informer/index"
 	"neuronet/pkg/k8s/meta"
 )
 
@@ -19,9 +18,7 @@ type Deployment interface {
 }
 
 type DeploymentAction interface {
-	ListAll(ctx context.Context) ([]*v1.Deployment, error)
-	ListByLabel(ctx context.Context, namespace string, label string) ([]*v1.Deployment, error)
-	ListByAnnotations(ctx context.Context, namespace string, annotations string) ([]*v1.Deployment, error)
+	List(ctx context.Context, options meta.ListOptions) ([]*v1.Deployment, error)
 	Get(ctx context.Context, options meta.GetOptions) (*v1.Deployment, error)
 }
 
@@ -35,46 +32,53 @@ func newDeployments(client appsinformers.DeploymentInformer) *deployments {
 	}
 }
 
-func (d *deployments) ListAll(ctx context.Context) ([]*v1.Deployment, error) {
-	list, err := d.client.Lister().List(labels.Everything())
-	if err != nil {
-		return nil, err
-	}
-	if len(list) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "nodeList not found")
-	}
-	return list, nil
-}
-
-func (d *deployments) ListByLabel(ctx context.Context, namespace string, label string) ([]*v1.Deployment, error) {
-	selector, err := labels.Parse(label)
-	if err != nil {
-		return nil, err
-	}
-	list, err := d.client.Lister().Deployments(namespace).List(selector)
-	if err != nil {
-		return nil, err
-	}
-	if len(list) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "deploymentList with %s label in %s namespace not found", label, namespace)
-	}
-	return list, nil
-}
-
-func (d *deployments) ListByAnnotations(ctx context.Context, namespace string, annotations string) ([]*v1.Deployment, error) {
-	var list = make([]*v1.Deployment, 0)
-	deployments, err := d.client.Informer().GetIndexer().ByIndex(index.DeploymentAnnotations, annotations)
-	if err != nil {
-		return nil, err
-	}
-	for _, tmpDeployment := range deployments {
-		deployment := tmpDeployment.(*v1.Deployment)
-		if namespace == deployment.Namespace {
-			list = append(list, deployment)
+func (d *deployments) List(ctx context.Context, options meta.ListOptions) ([]*v1.Deployment, error) {
+	var (
+		list     = make([]*v1.Deployment, 0)
+		selector labels.Selector
+		err      error
+	)
+	if len(options.IndexMap) != 0 {
+		// 只根据第一个索引查询
+		for key, value := range options.IndexMap {
+			deployments, err := d.client.Informer().GetIndexer().ByIndex(key, value)
+			if err != nil {
+				return nil, err
+			}
+			if options.Namespace != "" {
+				for _, tmpDeployment := range deployments {
+					deployment := tmpDeployment.(*v1.Deployment)
+					if options.Namespace == deployment.Namespace {
+						list = append(list, deployment)
+					}
+				}
+			} else {
+				for _, tmpDeployment := range deployments {
+					deployment := tmpDeployment.(*v1.Deployment)
+					list = append(list, deployment)
+				}
+			}
+			if len(list) == 0 {
+				return nil, errors.WithCode(code.ErrDataNotFound, "deploymentList not found")
+			}
+			return list, nil
 		}
 	}
+
+	if options.Label != "" {
+		selector, err = labels.Parse(options.Label)
+		if err != nil {
+			return nil, errors.WithCode(code.ErrInternalServer, "label parse error")
+		}
+	} else {
+		selector = labels.Everything()
+	}
+	list, err = d.client.Lister().Deployments(options.Namespace).List(selector)
+	if err != nil {
+		return nil, err
+	}
 	if len(list) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "deploymentList not found")
+		return nil, errors.WithCode(code.ErrDataNotFound, "deploymentList with %s label in %s namespace not found", options.Label, options.Namespace)
 	}
 	return list, nil
 }

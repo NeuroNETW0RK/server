@@ -7,7 +7,7 @@ type MetaID struct {
 }
 
 type MetaName struct {
-	Name string `form:"name" json:"name" binding:"required"`
+	Name string `form:"name" json:"name"`
 }
 
 type MetaSystemID struct {
@@ -43,15 +43,4 @@ type MetaUserID struct {
 type MetaIDName struct {
 	ID   int64  `form:"id" json:"id"`
 	Name string `form:"name" json:"name"`
-}
-
-type MetaPipelineStatus struct {
-	ScenarioStatusID   int64  `json:"scenario_status_id"`
-	ScenarioStatus     string `json:"scenario_status"`
-	AgentStatusID      int64  `json:"agent_status_id"`
-	AgentStatus        string `json:"agent_status"`
-	TrainingStatusID   int64  `json:"training_status_id"`
-	TrainingStatus     string `json:"training_status"`
-	EvaluationStatusID int64  `json:"evaluation_status_id"`
-	EvaluationStatus   string `json:"evaluation_status"`
 }

@@ -33,30 +33,16 @@ func newNodes(c kubernetes.Interface, informerStore informer.Storer) *nodes {
 
 func (c *nodes) Get(ctx context.Context, getOptions meta.GetOptions) (*v1.Node, error) {
 	if c.informer == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
 	return c.informer.InformerNodes().Get(ctx, getOptions)
 }
 
 func (c *nodes) List(ctx context.Context, options meta.ListOptions) ([]*v1.Node, error) {
 	if c.informer == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
-	var (
-		list []*v1.Node
-		err  error
-	)
-
-	if options.Label != "" {
-		list, err = c.informer.InformerNodes().ListByLabel(ctx, options.Label)
-		if err != nil {
-			return nil, err
-		}
-		return list, nil
-
-	}
-
-	list, err = c.informer.InformerNodes().ListAll(ctx)
+	list, err := c.informer.InformerNodes().List(ctx, options)
 	if err != nil {
 		return nil, err
 	}

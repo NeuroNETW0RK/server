@@ -29,4 +29,5 @@ func init() {
 	register(ErrValue, 500, "Map value not exist")
 	register(ErrDataNotFound, 200, "Data not found")
 	register(ErrDataExisted, 200, "Data existed")
+	register(ErrClusterNotFound, 200, "Cluster not found")
 }

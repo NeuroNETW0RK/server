@@ -40,6 +40,9 @@ func newStatefulSets(c kubernetes.Interface, informerStore informer.Storer) *sta
 }
 
 func (c *statefulSets) Create(ctx context.Context, statefulSet *v1.StatefulSet, options meta.CreateOptions) error {
+	if c.client == nil {
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
+	}
 	_, err := c.client.AppsV1().
 		StatefulSets(options.Namespace).
 		Create(ctx, statefulSet, metav1.CreateOptions{})
@@ -54,7 +57,9 @@ func (c *statefulSets) Create(ctx context.Context, statefulSet *v1.StatefulSet, 
 }
 
 func (c *statefulSets) Update(ctx context.Context, statefulSet *v1.StatefulSet, options meta.UpdateOptions) error {
-
+	if c.client == nil {
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
+	}
 	if _, err := c.client.AppsV1().StatefulSets(options.Namespace).Update(ctx, statefulSet, metav1.UpdateOptions{}); err != nil {
 		return err
 	}
@@ -63,7 +68,9 @@ func (c *statefulSets) Update(ctx context.Context, statefulSet *v1.StatefulSet, 
 }
 
 func (c *statefulSets) Delete(ctx context.Context, options meta.DeleteOptions) error {
-
+	if c.client == nil {
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
+	}
 	if err := c.client.AppsV1().StatefulSets(options.Namespace).Delete(ctx, options.ObjectName, metav1.DeleteOptions{}); err != nil {
 		return err
 	}
@@ -72,31 +79,17 @@ func (c *statefulSets) Delete(ctx context.Context, options meta.DeleteOptions) e
 }
 
 func (c *statefulSets) Get(ctx context.Context, options meta.GetOptions) (*v1.StatefulSet, error) {
+	if c.informer == nil {
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
+	}
 	return c.informer.InformerStatefulSets().Get(ctx, options)
 }
 
 func (c *statefulSets) List(ctx context.Context, options meta.ListOptions) ([]*v1.StatefulSet, error) {
-	var (
-		list []*v1.StatefulSet
-		err  error
-	)
-
-	if options.Label != "" {
-		list, err = c.informer.InformerStatefulSets().ListByLabel(ctx, options.Namespace, options.Label)
-		if err != nil {
-			return nil, err
-		}
-		return list, nil
-
-	} else if options.Annotations != "" {
-		list, err = c.informer.InformerStatefulSets().ListByAnnotations(ctx, options.Namespace, options.Annotations)
-		if err != nil {
-			return nil, err
-		}
-		return list, nil
+	if c.informer == nil {
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
-
-	list, err = c.informer.InformerStatefulSets().ListAll(ctx)
+	list, err := c.informer.InformerStatefulSets().List(ctx, options)
 	if err != nil {
 		return nil, err
 	}

@@ -38,3 +38,7 @@ type ClusterUpdateArgs struct {
 	Description    string `form:"description" json:"description"`
 	KubeConfigPath string `form:"kube_config_path" json:"kube_config_path"`
 }
+
+type ClusterReloadArgs struct {
+	MetaID
+}

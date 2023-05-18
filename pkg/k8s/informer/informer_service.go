@@ -18,8 +18,7 @@ type Service interface {
 }
 
 type ServiceAction interface {
-	ListAll(ctx context.Context) ([]*v1.Service, error)
-	ListByLabel(ctx context.Context, namespace string, label string) ([]*v1.Service, error)
+	List(ctx context.Context, options meta.ListOptions) ([]*v1.Service, error)
 	Get(ctx context.Context, options meta.GetOptions) (*v1.Service, error)
 }
 
@@ -33,28 +32,53 @@ func newServices(client coreinformers.ServiceInformer) *services {
 	}
 }
 
-func (d *services) ListAll(ctx context.Context) ([]*v1.Service, error) {
-	list, err := d.client.Lister().List(labels.Everything())
-	if err != nil {
-		return nil, err
+func (d *services) List(ctx context.Context, options meta.ListOptions) ([]*v1.Service, error) {
+	var (
+		list     = make([]*v1.Service, 0)
+		selector labels.Selector
+		err      error
+	)
+	if len(options.IndexMap) != 0 {
+		// 只根据第一个索引查询
+		for key, value := range options.IndexMap {
+			services, err := d.client.Informer().GetIndexer().ByIndex(key, value)
+			if err != nil {
+				return nil, err
+			}
+			if options.Namespace != "" {
+				for _, tmpService := range services {
+					service := tmpService.(*v1.Service)
+					if options.Namespace == service.Namespace {
+						list = append(list, service)
+					}
+				}
+			} else {
+				for _, tmpService := range services {
+					service := tmpService.(*v1.Service)
+					list = append(list, service)
+				}
+			}
+			if len(list) == 0 {
+				return nil, errors.WithCode(code.ErrDataNotFound, "serviceList not found")
+			}
+			return list, nil
+		}
 	}
-	if len(list) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "nodeList not found")
-	}
-	return list, nil
-}
 
-func (d *services) ListByLabel(ctx context.Context, namespace string, label string) ([]*v1.Service, error) {
-	selector, err := labels.Parse(label)
-	if err != nil {
-		return nil, err
+	if options.Label != "" {
+		selector, err = labels.Parse(options.Label)
+		if err != nil {
+			return nil, errors.WithCode(code.ErrInternalServer, "label parse error")
+		}
+	} else {
+		selector = labels.Everything()
 	}
-	list, err := d.client.Lister().Services(namespace).List(selector)
+	list, err = d.client.Lister().Services(options.Namespace).List(selector)
 	if err != nil {
 		return nil, err
 	}
 	if len(list) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "serviceList with %s label in %s namespace not found", label, namespace)
+		return nil, errors.WithCode(code.ErrDataNotFound, "serviceList with %s label in %s namespace not found", options.Label, options.Namespace)
 	}
 	return list, nil
 }

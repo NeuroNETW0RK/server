@@ -2,6 +2,8 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"neuronet/internal/neuronetserver/controller/v1/cluster"
+	clusterresource "neuronet/internal/neuronetserver/controller/v1/cluster_resource"
 	"neuronet/internal/neuronetserver/controller/v1/permission"
 	"neuronet/internal/neuronetserver/controller/v1/role"
 	"neuronet/internal/neuronetserver/controller/v1/user"
@@ -55,6 +57,24 @@ func New(opts *options.Options) error {
 		permissionGroup.POST("", opts.Interceptors.JWTAuth(), permissionController.Create)
 		permissionGroup.DELETE("", opts.Interceptors.JWTAuth(), permissionController.Delete)
 		permissionGroup.PUT("", opts.Interceptors.JWTAuth(), permissionController.Update)
+	}
+
+	clusterController := cluster.NewController(opts.Db, opts.StoreFactory)
+	clusterGroup := versionGroup.Group("/cluster")
+	{
+		clusterGroup.GET("/list", clusterController.GetList)
+		clusterGroup.POST("", clusterController.Create)
+		clusterGroup.DELETE("", clusterController.Delete)
+		clusterGroup.PUT("", clusterController.Update)
+		clusterGroup.POST("/reload", clusterController.Reload)
+	}
+
+	clusterResourceController := clusterresource.NewController()
+	clusterResourceGroup := versionGroup.Group("/cluster/:cluster_name")
+	{
+		clusterResourceGroup.GET("/:node_name", clusterResourceController.SingleNodes)
+		clusterResourceGroup.GET("/label/:label", clusterResourceController.GroupNodes)
+		clusterResourceGroup.GET("", clusterResourceController.AllNodes)
 	}
 
 	return nil

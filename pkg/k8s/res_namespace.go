@@ -34,7 +34,7 @@ func newNamespaces(c kubernetes.Interface, informerStore informer.Storer) *names
 
 func (c *namespaces) List(ctx context.Context) ([]*v1.Namespace, error) {
 	if c.informer == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
 	return c.informer.InformerNamespaces().List(ctx)
 }

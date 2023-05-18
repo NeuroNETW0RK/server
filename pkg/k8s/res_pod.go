@@ -48,24 +48,11 @@ func newPods(c kubernetes.Interface, metricsClient versioned.Interface, informer
 }
 
 func (p *pods) List(ctx context.Context, options meta.ListOptions) ([]*v1.Pod, error) {
-	var (
-		list []*v1.Pod
-		err  error
-	)
 	if p.informer == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
 
-	if options.Label != "" {
-		list, err = p.informer.InformerPods().ListByLabel(ctx, options.Namespace, options.Label)
-		if err != nil {
-			return nil, err
-		}
-		return list, nil
-
-	}
-
-	list, err = p.informer.InformerPods().ListAll(ctx)
+	list, err := p.informer.InformerPods().List(ctx, options)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +65,7 @@ func (p *pods) Top(ctx context.Context, options meta.TopOptions) (*apiv1.TopPod,
 	)
 
 	if p.metricsClient == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "metricsClient is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "metricsClient is nil")
 	}
 
 	podTop := new(apiv1.TopPod)
@@ -104,14 +91,14 @@ func (p *pods) Top(ctx context.Context, options meta.TopOptions) (*apiv1.TopPod,
 
 func (p *pods) Get(ctx context.Context, options meta.GetOptions) (*v1.Pod, error) {
 	if p.informer == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
 	return p.informer.InformerPods().Get(ctx, options)
 }
 
 func (p *pods) Logs(ctx context.Context, w http.ResponseWriter, r *http.Request, options meta.LogOptions) error {
 	if p.client == nil {
-		return errors.WithCode(code.ErrInternalServer, "client is nil")
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 
 	opts := &v1.PodLogOptions{
@@ -147,7 +134,7 @@ func (p *pods) Logs(ctx context.Context, w http.ResponseWriter, r *http.Request,
 
 func (p *pods) Command(ctx context.Context, w http.ResponseWriter, r *http.Request, webShellOptions *meta.TerminalOptions, kubeconfigPath string) error {
 	if p.client == nil {
-		return errors.WithCode(code.ErrInternalServer, "client is nil")
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 	if err != nil {

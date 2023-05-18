@@ -3,16 +3,12 @@ package cluster
 import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/metrics/pkg/client/clientset/versioned"
 	v1 "neuronet/internal/neuronetserver/dto/v1"
 	"neuronet/internal/neuronetserver/model"
 	"neuronet/internal/neuronetserver/store"
 	"neuronet/internal/pkg/code"
 	"neuronet/pkg/errors"
 	"neuronet/pkg/k8s"
-	"neuronet/pkg/k8s/informer"
 	"neuronet/pkg/log"
 )
 
@@ -23,6 +19,7 @@ type Service interface {
 	Delete(c *gin.Context, args *v1.ClusterDeleteArgs) error
 	GetList(c *gin.Context, args *v1.ClusterListArgs) (*v1.ClusterListReply, error)
 	Update(c *gin.Context, args *v1.ClusterUpdateArgs) error
+	Reload(c *gin.Context, args *v1.ClusterReloadArgs) error
 }
 
 type service struct {
@@ -61,28 +58,12 @@ func (s *service) Create(c *gin.Context, args *v1.ClusterCreateArgs) (*v1.Cluste
 	}
 
 	clusterSets := k8s.GetClusterSets()
-	config, err := clientcmd.BuildConfigFromFlags("", newCluster.ConfigPath)
-	if err != nil {
-		log.Warnf("Can't create config %v", err)
-		return nil, errors.WithCode(code.ErrInternalServer, "can't create config")
-	}
-
-	clientSet, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		log.Warnf("Can't create clientSet %v", err)
-		return nil, errors.WithCode(code.ErrInternalServer, "can't create clientSet")
-	}
-
-	metricSet, err := versioned.NewForConfig(config)
-	if err != nil {
-		log.Warnf("Can't create metricSet %v", err)
-	}
-
 	stop := make(chan struct{})
-	informerStore, err := informer.NewInformerStore(stop, clientSet)
+	clientSets, err := k8s.NewClientSets(c, newCluster.ConfigPath, stop)
 	if err != nil {
-		log.C(c).Warnf("create informer store error: %v", err)
-		return nil, errors.WithCode(code.ErrInternalServer, "create informer store error")
+		close(stop)
+		log.C(c).Warnf("create client sets error: %v", err)
+		return nil, err
 	}
 
 	err = s.store.Cluster().Create(c, s.db, newCluster)
@@ -90,12 +71,6 @@ func (s *service) Create(c *gin.Context, args *v1.ClusterCreateArgs) (*v1.Cluste
 		close(stop)
 		log.C(c).Warnf("create cluster error: %v", err)
 		return nil, err
-	}
-
-	clientSets := &k8s.ClientSets{
-		K8sClient:      clientSet,
-		MetricsClient:  metricSet,
-		InformerClient: informerStore,
 	}
 	clusterSets.Add(newCluster.Name, clientSets)
 
@@ -190,40 +165,16 @@ func (s *service) Update(c *gin.Context, args *v1.ClusterUpdateArgs) error {
 	}
 
 	stop := make(chan struct{})
-	clusterSets := k8s.GetClusterSets()
 
 	if args.KubeConfigPath != "" {
-		config, err := clientcmd.BuildConfigFromFlags("", newCluster.ConfigPath)
+		clientSets, err = k8s.NewClientSets(c, args.KubeConfigPath, stop)
 		if err != nil {
-			log.Warnf("Can't create config %v", err)
-			return errors.WithCode(code.ErrInternalServer, "can't create config")
-		}
-
-		clientSet, err := kubernetes.NewForConfig(config)
-		if err != nil {
-			log.Warnf("Can't create clientSet %v", err)
-			return errors.WithCode(code.ErrInternalServer, "can't create clientSet")
-		}
-
-		metricSet, err := versioned.NewForConfig(config)
-		if err != nil {
-			log.Warnf("Can't create metricSet %v", err)
-		}
-
-		stop := make(chan struct{})
-		informerStore, err := informer.NewInformerStore(stop, clientSet)
-		if err != nil {
-			log.C(c).Warnf("create informer store error: %v", err)
-			return errors.WithCode(code.ErrInternalServer, "create informer store error")
-		}
-
-		clientSets = &k8s.ClientSets{
-			K8sClient:      clientSet,
-			MetricsClient:  metricSet,
-			InformerClient: informerStore,
+			close(stop)
+			log.C(c).Warnf("create client sets error: %v", err)
+			return err
 		}
 	} else {
-		clientSets = clusterSets.Get(clusterBo.Name)
+		clientSets = k8s.GetClusterSets().Get(clusterBo.Name)
 	}
 
 	err = s.store.Cluster().Updates(c, s.db, newCluster, s.store.WithID(args.ID))
@@ -232,9 +183,25 @@ func (s *service) Update(c *gin.Context, args *v1.ClusterUpdateArgs) error {
 		log.C(c).Warnf("update cluster error: %v", err)
 		return err
 	}
+	k8s.GetClusterSets().Delete(clusterBo.Name)
+	k8s.GetClusterSets().Update(newCluster.Name, clientSets)
 
-	clusterSets.Update(newCluster.Name, clientSets)
+	return nil
+}
 
+func (s *service) Reload(c *gin.Context, args *v1.ClusterReloadArgs) error {
+	clusterBo, err := s.store.Cluster().GetBy(c, s.db, s.store.WithID(args.ID))
+	if err != nil {
+		log.C(c).Warnf("get cluster error: %v", err)
+		return err
+	}
+	stop := make(chan struct{})
+	clientSets, err := k8s.NewClientSets(c, clusterBo.ConfigPath, stop)
+	if err != nil {
+		log.C(c).Warnf("create clientSets error: %v", err)
+		return errors.WithCode(code.ErrInternalServer, "create clientSets error")
+	}
+	k8s.GetClusterSets().Update(clusterBo.Name, clientSets)
 	return nil
 }
 

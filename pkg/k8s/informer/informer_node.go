@@ -18,8 +18,7 @@ type Node interface {
 }
 
 type NodeAction interface {
-	ListAll(ctx context.Context) ([]*v1.Node, error)
-	ListByLabel(ctx context.Context, label string) ([]*v1.Node, error)
+	List(ctx context.Context, options meta.ListOptions) ([]*v1.Node, error)
 	Get(ctx context.Context, options meta.GetOptions) (*v1.Node, error)
 }
 
@@ -33,30 +32,55 @@ func newNodes(client coreinformers.NodeInformer) *nodes {
 	}
 }
 
-func (d *nodes) ListAll(ctx context.Context) ([]*v1.Node, error) {
-	nodeList, err := d.client.Lister().List(labels.Everything())
-	if err != nil {
-		return nil, err
+func (d *nodes) List(ctx context.Context, options meta.ListOptions) ([]*v1.Node, error) {
+	var (
+		list     = make([]*v1.Node, 0)
+		selector labels.Selector
+		err      error
+	)
+	if len(options.IndexMap) != 0 {
+		// 只根据第一个索引查询
+		for key, value := range options.IndexMap {
+			nodes, err := d.client.Informer().GetIndexer().ByIndex(key, value)
+			if err != nil {
+				return nil, err
+			}
+			if options.Namespace != "" {
+				for _, tmpNode := range nodes {
+					node := tmpNode.(*v1.Node)
+					if options.Namespace == node.Namespace {
+						list = append(list, node)
+					}
+				}
+			} else {
+				for _, tmpNode := range nodes {
+					node := tmpNode.(*v1.Node)
+					list = append(list, node)
+				}
+			}
+			if len(list) == 0 {
+				return nil, errors.WithCode(code.ErrDataNotFound, "nodeList not found")
+			}
+			return list, nil
+		}
 	}
-	if len(nodeList) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "nodeList not found")
-	}
-	return nodeList, nil
-}
 
-func (d *nodes) ListByLabel(ctx context.Context, label string) ([]*v1.Node, error) {
-	selector, err := labels.Parse(label)
+	if options.Label != "" {
+		selector, err = labels.Parse(options.Label)
+		if err != nil {
+			return nil, errors.WithCode(code.ErrInternalServer, "label parse error")
+		}
+	} else {
+		selector = labels.Everything()
+	}
+	list, err = d.client.Lister().List(selector)
 	if err != nil {
 		return nil, err
 	}
-	nodeList, err := d.client.Lister().List(selector)
-	if err != nil {
-		return nil, err
+	if len(list) == 0 {
+		return nil, errors.WithCode(code.ErrDataNotFound, "nodeList with %s label not found", options.Label)
 	}
-	if len(nodeList) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "nodeList with %s label not found", label)
-	}
-	return nodeList, nil
+	return list, nil
 }
 
 func (d *nodes) Get(ctx context.Context, options meta.GetOptions) (*v1.Node, error) {

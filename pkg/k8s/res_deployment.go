@@ -67,7 +67,7 @@ func (d *deployments) Restart(ctx context.Context, options meta.RestartOptions) 
 
 func (d *deployments) Create(ctx context.Context, deployment *v1.Deployment, options meta.CreateOptions) (err error) {
 	if d.client == nil {
-		return errors.WithCode(code.ErrInternalServer, "client is nil")
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 	_, err = d.client.AppsV1().Deployments(options.Namespace).Create(ctx, deployment, metav1.CreateOptions{})
 	if err != nil {
@@ -81,7 +81,7 @@ func (d *deployments) Create(ctx context.Context, deployment *v1.Deployment, opt
 
 func (d *deployments) Update(ctx context.Context, deployment *v1.Deployment, options meta.UpdateOptions) (err error) {
 	if d.client == nil {
-		return errors.WithCode(code.ErrInternalServer, "client is nil")
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 	_, err = d.client.AppsV1().
 		Deployments(options.Namespace).
@@ -92,7 +92,7 @@ func (d *deployments) Update(ctx context.Context, deployment *v1.Deployment, opt
 
 func (d *deployments) Delete(ctx context.Context, options meta.DeleteOptions) (err error) {
 	if d.client == nil {
-		return errors.WithCode(code.ErrInternalServer, "client is nil")
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 
 	err = d.client.AppsV1().Deployments(options.Namespace).Delete(ctx, options.ObjectName, metav1.DeleteOptions{})
@@ -107,31 +107,9 @@ func (d *deployments) Delete(ctx context.Context, options meta.DeleteOptions) (e
 
 func (d *deployments) List(ctx context.Context, options meta.ListOptions) ([]*v1.Deployment, error) {
 	if d.informer == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
-
-	var (
-		list []*v1.Deployment
-		err  error
-	)
-
-	if options.Label != "" {
-		list, err = d.informer.InformerDeployments().ListByLabel(ctx, options.Namespace, options.Label)
-		if err != nil {
-			return nil, err
-		}
-		return list, nil
-
-	} else if options.Annotations != "" {
-		list, err = d.informer.InformerDeployments().ListByAnnotations(ctx, options.Namespace, options.Annotations)
-		if err != nil {
-			return nil, err
-		}
-		return list, nil
-
-	}
-
-	list, err = d.informer.InformerDeployments().ListAll(ctx)
+	list, err := d.informer.InformerDeployments().List(ctx, options)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +118,7 @@ func (d *deployments) List(ctx context.Context, options meta.ListOptions) ([]*v1
 
 func (d *deployments) Get(ctx context.Context, options meta.GetOptions) (*v1.Deployment, error) {
 	if d.informer == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
 	return d.informer.InformerDeployments().Get(ctx, options)
 }

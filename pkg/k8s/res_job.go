@@ -40,7 +40,7 @@ func newJobs(c kubernetes.Interface, informerStore informer.Storer) *jobs {
 
 func (c *jobs) Create(ctx context.Context, job *batchv1.Job, options meta.CreateOptions) error {
 	if c.client == nil {
-		return errors.WithCode(code.ErrInternalServer, "client is nil")
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 	_, err := c.client.BatchV1().
 		Jobs(options.Namespace).
@@ -57,7 +57,7 @@ func (c *jobs) Create(ctx context.Context, job *batchv1.Job, options meta.Create
 
 func (c *jobs) Delete(ctx context.Context, deleteOptions meta.DeleteOptions) error {
 	if c.client == nil {
-		return errors.WithCode(code.ErrInternalServer, "client is nil")
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 	propagationPolicy := metav1.DeletePropagationBackground
 	if err := c.client.BatchV1().
@@ -71,37 +71,16 @@ func (c *jobs) Delete(ctx context.Context, deleteOptions meta.DeleteOptions) err
 
 func (c *jobs) Get(ctx context.Context, getOptions meta.GetOptions) (*batchv1.Job, error) {
 	if c.informer == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
 	return c.informer.InformerJobs().Get(ctx, getOptions)
 }
 
 func (c *jobs) List(ctx context.Context, options meta.ListOptions) ([]*batchv1.Job, error) {
 	if c.informer == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
-	var (
-		list []*batchv1.Job
-		err  error
-	)
-
-	if options.Label != "" {
-		list, err = c.informer.InformerJobs().ListByLabel(ctx, options.Namespace, options.Label)
-		if err != nil {
-			return nil, err
-		}
-		return list, nil
-
-	} else if options.Annotations != "" {
-		list, err = c.informer.InformerJobs().ListByAnnotations(ctx, options.Namespace, options.Annotations)
-		if err != nil {
-			return nil, err
-		}
-		return list, nil
-
-	}
-
-	list, err = c.informer.InformerJobs().ListAll(ctx)
+	list, err := c.informer.InformerJobs().List(ctx, options)
 	if err != nil {
 		return nil, err
 	}

@@ -48,9 +48,9 @@ type TerminalOptions struct {
 }
 
 type ListSelector struct {
-	Field       string `form:"field"`
-	Label       string `form:"label"`
-	Annotations string `form:"annotations"`
+	Field    string            `form:"field"`
+	Label    string            `form:"label"`
+	IndexMap map[string]string `form:"index_map"`
 
 	Page     int `form:"page"`      // 页数
 	PageSize int `form:"page_size"` // 每页数量

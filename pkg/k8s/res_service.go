@@ -40,23 +40,9 @@ func newServices(c kubernetes.Interface, informerStore informer.Storer) *service
 
 func (c *services) List(ctx context.Context, options meta.ListOptions) ([]*v1.Service, error) {
 	if c.informer == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
-	var (
-		list []*v1.Service
-		err  error
-	)
-
-	if options.Label != "" {
-		list, err = c.informer.InformerServices().ListByLabel(ctx, options.Namespace, options.Label)
-		if err != nil {
-			return nil, err
-		}
-		return list, nil
-
-	}
-
-	list, err = c.informer.InformerServices().ListAll(ctx)
+	list, err := c.informer.InformerServices().List(ctx, options)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +51,7 @@ func (c *services) List(ctx context.Context, options meta.ListOptions) ([]*v1.Se
 
 func (c *services) Create(ctx context.Context, service *v1.Service, options meta.CreateOptions) error {
 	if c.client == nil {
-		return errors.WithCode(code.ErrInternalServer, "client is nil")
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 	if _, err := c.client.CoreV1().
 		Services(options.Namespace).
@@ -81,7 +67,7 @@ func (c *services) Create(ctx context.Context, service *v1.Service, options meta
 
 func (c *services) Update(ctx context.Context, service *v1.Service, options meta.UpdateOptions) error {
 	if c.client == nil {
-		return errors.WithCode(code.ErrInternalServer, "client is nil")
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 	oldService, err := c.Get(ctx, meta.GetOptions{
 		Namespace:  options.Namespace,
@@ -102,7 +88,7 @@ func (c *services) Update(ctx context.Context, service *v1.Service, options meta
 
 func (c *services) Delete(ctx context.Context, deleteOptions meta.DeleteOptions) error {
 	if c.client == nil {
-		return errors.WithCode(code.ErrInternalServer, "client is nil")
+		return errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 	err := c.client.CoreV1().
 		Services(deleteOptions.Namespace).
@@ -119,7 +105,7 @@ func (c *services) Delete(ctx context.Context, deleteOptions meta.DeleteOptions)
 
 func (c *services) Get(ctx context.Context, getOptions meta.GetOptions) (*v1.Service, error) {
 	if c.informer == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "informer is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "informer is nil")
 	}
 	return c.informer.InformerServices().Get(ctx, getOptions)
 }

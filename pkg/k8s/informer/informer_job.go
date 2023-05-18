@@ -8,7 +8,6 @@ import (
 	batchinformers "k8s.io/client-go/informers/batch/v1"
 	"neuronet/internal/pkg/code"
 	"neuronet/pkg/errors"
-	"neuronet/pkg/k8s/informer/index"
 	"neuronet/pkg/k8s/meta"
 )
 
@@ -19,9 +18,7 @@ type Job interface {
 }
 
 type JobAction interface {
-	ListAll(ctx context.Context) ([]*batchv1.Job, error)
-	ListByLabel(ctx context.Context, namespace string, label string) ([]*batchv1.Job, error)
-	ListByAnnotations(ctx context.Context, namespace string, annotations string) ([]*batchv1.Job, error)
+	List(ctx context.Context, options meta.ListOptions) ([]*batchv1.Job, error)
 	Get(ctx context.Context, options meta.GetOptions) (*batchv1.Job, error)
 }
 
@@ -35,46 +32,53 @@ func newJobs(client batchinformers.JobInformer) *jobs {
 	}
 }
 
-func (d *jobs) ListAll(ctx context.Context) ([]*batchv1.Job, error) {
-	list, err := d.client.Lister().List(labels.Everything())
-	if err != nil {
-		return nil, err
-	}
-	if len(list) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "nodeList not found")
-	}
-	return list, nil
-}
-
-func (d *jobs) ListByLabel(ctx context.Context, namespace string, label string) ([]*batchv1.Job, error) {
-	selector, err := labels.Parse(label)
-	if err != nil {
-		return nil, err
-	}
-	list, err := d.client.Lister().Jobs(namespace).List(selector)
-	if err != nil {
-		return nil, err
-	}
-	if len(list) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "jobList with %s label in %s namespace not found", label, namespace)
-	}
-	return list, nil
-}
-
-func (d *jobs) ListByAnnotations(ctx context.Context, namespace string, annotations string) ([]*batchv1.Job, error) {
-	var list = make([]*batchv1.Job, 0)
-	jobs, err := d.client.Informer().GetIndexer().ByIndex(index.JobAnnotations, annotations)
-	if err != nil {
-		return nil, err
-	}
-	for _, tmpJob := range jobs {
-		job := tmpJob.(*batchv1.Job)
-		if namespace == job.Namespace {
-			list = append(list, job)
+func (d *jobs) List(ctx context.Context, options meta.ListOptions) ([]*batchv1.Job, error) {
+	var (
+		list     = make([]*batchv1.Job, 0)
+		selector labels.Selector
+		err      error
+	)
+	if len(options.IndexMap) != 0 {
+		// 只根据第一个索引查询
+		for key, value := range options.IndexMap {
+			jobs, err := d.client.Informer().GetIndexer().ByIndex(key, value)
+			if err != nil {
+				return nil, err
+			}
+			if options.Namespace != "" {
+				for _, tmpDeployment := range jobs {
+					job := tmpDeployment.(*batchv1.Job)
+					if options.Namespace == job.Namespace {
+						list = append(list, job)
+					}
+				}
+			} else {
+				for _, tmpDeployment := range jobs {
+					job := tmpDeployment.(*batchv1.Job)
+					list = append(list, job)
+				}
+			}
+			if len(list) == 0 {
+				return nil, errors.WithCode(code.ErrDataNotFound, "jobList not found")
+			}
+			return list, nil
 		}
 	}
+
+	if options.Label != "" {
+		selector, err = labels.Parse(options.Label)
+		if err != nil {
+			return nil, errors.WithCode(code.ErrInternalServer, "label parse error")
+		}
+	} else {
+		selector = labels.Everything()
+	}
+	list, err = d.client.Lister().Jobs(options.Namespace).List(selector)
+	if err != nil {
+		return nil, err
+	}
 	if len(list) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "jobList not found")
+		return nil, errors.WithCode(code.ErrDataNotFound, "jobList with %s label in %s namespace not found", options.Label, options.Namespace)
 	}
 	return list, nil
 }

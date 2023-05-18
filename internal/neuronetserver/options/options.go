@@ -1,6 +1,7 @@
 package options
 
 import (
+	"context"
 	"fmt"
 	"github.com/go-redis/redis/v7"
 	"gorm.io/gorm"
@@ -10,6 +11,7 @@ import (
 	"neuronet/internal/neuronetserver/store/mysql"
 	"neuronet/internal/pkg/core"
 	"neuronet/pkg/db"
+	"neuronet/pkg/k8s"
 	"neuronet/pkg/log"
 	cache "neuronet/pkg/redis"
 )
@@ -59,6 +61,11 @@ func (o *Options) register() error {
 		return err
 	}
 	fmt.Println("[REGISTER] register web server successful")
+	// 注册clusterSets
+	if err := o.registerK8s(); err != nil {
+		return err
+	}
+	fmt.Println("[REGISTER] register k8s successful")
 	return nil
 }
 
@@ -134,5 +141,28 @@ func (o *Options) registerRedis() error {
 		return err
 	}
 	o.Redis = client
+	return nil
+}
+
+func (o *Options) registerK8s() error {
+	k8s.NewClusterSet()
+	k8s.NewCoreV1Store(k8s.GetClusterSets())
+	ctx := context.Background()
+	clusterBos, err := o.StoreFactory.Cluster().GetListBy(ctx, o.Db)
+	if err != nil {
+		return err
+	}
+	clusterSets := k8s.GetClusterSets()
+	for _, clusterBo := range clusterBos {
+		stop := make(chan struct{})
+		clientSets, err := k8s.NewClientSets(ctx, clusterBo.ConfigPath, stop)
+		if err != nil {
+			close(stop)
+			log.Warnf("[REGISTER] load cluster %s failed, err: %v", clusterBo.Name, err)
+			fmt.Printf("[REGISTER] load cluster %s failed, err: %v \n", clusterBo.Name, err)
+			continue
+		}
+		clusterSets.Add(clusterBo.Name, clientSets)
+	}
 	return nil
 }

@@ -35,7 +35,7 @@ func newEvents(c kubernetes.Interface) *events {
 
 func (c *events) List(ctx context.Context, options meta.ListOptions) ([]v1.Event, error) {
 	if c.client == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "client is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 	event, err := c.client.CoreV1().
 		Events(options.Namespace).
@@ -49,7 +49,7 @@ func (c *events) List(ctx context.Context, options meta.ListOptions) ([]v1.Event
 
 func (c *events) Get(ctx context.Context, args apiv1.Event, options meta.GetOptions) ([]v1.Event, error) {
 	if c.client == nil {
-		return nil, errors.WithCode(code.ErrInternalServer, "client is nil")
+		return nil, errors.WithCode(code.ErrClusterNotFound, "client is nil")
 	}
 	event, err := c.client.CoreV1().
 		Events(options.Namespace).

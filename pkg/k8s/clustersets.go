@@ -1,9 +1,6 @@
 package k8s
 
 import (
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/metrics/pkg/client/clientset/versioned"
-	"neuronet/pkg/k8s/informer"
 	"sync"
 )
 
@@ -11,12 +8,6 @@ var clusterSets IClusterSet
 
 func GetClusterSets() IClusterSet {
 	return clusterSets
-}
-
-type ClientSets struct {
-	K8sClient      kubernetes.Interface
-	MetricsClient  versioned.Interface
-	InformerClient informer.Storer
 }
 
 type IClusterSet interface {
@@ -29,8 +20,8 @@ type IClusterSet interface {
 
 var _ IClusterSet = (*ClusterSet)(nil)
 
-func NewClusterSet() *ClusterSet {
-	return &ClusterSet{clientSets: map[string]*ClientSets{}}
+func NewClusterSet() {
+	clusterSets = &ClusterSet{clientSets: map[string]*ClientSets{}}
 }
 
 type ClusterSet struct {
@@ -66,7 +57,11 @@ func (c *ClusterSet) Get(clusterName string) *ClientSets {
 
 	item, exists := c.clientSets[clusterName]
 	if !exists {
-		return nil
+		return &ClientSets{
+			K8sClient:      nil,
+			MetricsClient:  nil,
+			InformerClient: nil,
+		}
 	}
 	return item
 }

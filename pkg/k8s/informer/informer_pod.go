@@ -18,8 +18,7 @@ type Pod interface {
 }
 
 type PodAction interface {
-	ListAll(ctx context.Context) ([]*v1.Pod, error)
-	ListByLabel(ctx context.Context, namespace string, label string) ([]*v1.Pod, error)
+	List(ctx context.Context, options meta.ListOptions) ([]*v1.Pod, error)
 	Get(ctx context.Context, options meta.GetOptions) (*v1.Pod, error)
 }
 
@@ -33,28 +32,53 @@ func newPods(client coreinformers.PodInformer) *pods {
 	}
 }
 
-func (d *pods) ListAll(ctx context.Context) ([]*v1.Pod, error) {
-	list, err := d.client.Lister().List(labels.Everything())
-	if err != nil {
-		return nil, err
+func (d *pods) List(ctx context.Context, options meta.ListOptions) ([]*v1.Pod, error) {
+	var (
+		list     = make([]*v1.Pod, 0)
+		selector labels.Selector
+		err      error
+	)
+	if len(options.IndexMap) != 0 {
+		// 只根据第一个索引查询
+		for key, value := range options.IndexMap {
+			pods, err := d.client.Informer().GetIndexer().ByIndex(key, value)
+			if err != nil {
+				return nil, err
+			}
+			if options.Namespace != "" {
+				for _, tmpPod := range pods {
+					pod := tmpPod.(*v1.Pod)
+					if options.Namespace == pod.Namespace {
+						list = append(list, pod)
+					}
+				}
+			} else {
+				for _, tmpPod := range pods {
+					pod := tmpPod.(*v1.Pod)
+					list = append(list, pod)
+				}
+			}
+			if len(list) == 0 {
+				return nil, errors.WithCode(code.ErrDataNotFound, "podList not found")
+			}
+			return list, nil
+		}
 	}
-	if len(list) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "nodeList not found")
-	}
-	return list, nil
-}
 
-func (d *pods) ListByLabel(ctx context.Context, namespace string, label string) ([]*v1.Pod, error) {
-	selector, err := labels.Parse(label)
-	if err != nil {
-		return nil, err
+	if options.Label != "" {
+		selector, err = labels.Parse(options.Label)
+		if err != nil {
+			return nil, errors.WithCode(code.ErrInternalServer, "label parse error")
+		}
+	} else {
+		selector = labels.Everything()
 	}
-	list, err := d.client.Lister().Pods(namespace).List(selector)
+	list, err = d.client.Lister().Pods(options.Namespace).List(selector)
 	if err != nil {
 		return nil, err
 	}
 	if len(list) == 0 {
-		return nil, errors.WithCode(code.ErrDataNotFound, "podList with %s label in %s namespace not found", label, namespace)
+		return nil, errors.WithCode(code.ErrDataNotFound, "podList with %s label in %s namespace not found", options.Label, options.Namespace)
 	}
 	return list, nil
 }
