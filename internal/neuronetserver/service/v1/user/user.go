@@ -103,7 +103,7 @@ func (s *service) Register(c *gin.Context, args *v1.UserRegisterArgs) error {
 func (s *service) Login(c *gin.Context, args *v1.UserLoginArgs) (*v1.UserLoginReply, error) {
 	var roleIDs []int64
 
-	userInfo, err := s.store.User().GetBy(c, s.db, s.store.User().WithAccount(args.Account), s.store.WithPreload("System"))
+	userInfo, err := s.store.User().GetBy(c, s.db, s.store.User().WithAccount(args.Account))
 	if err != nil {
 		log.C(c).Warnf("get user cnt error: %v", err)
 		return nil, err
