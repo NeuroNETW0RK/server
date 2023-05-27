@@ -35,7 +35,6 @@ func UserBoMapper(user model.UserBo) v1.UserDetailReply {
 		ID:          user.ID,
 		Name:        user.Name,
 		Account:     user.Account,
-		SystemId:    user.SystemID,
 		Roles:       rolesDetail,
 		Permissions: permissionsDetail,
 	}

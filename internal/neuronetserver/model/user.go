@@ -14,7 +14,6 @@ type User struct {
 	Account   string                `gorm:"uniqueIndex:idx_account_deleted;type:varchar(64);not null;column:account;comment:账号"`
 	Name      string                `gorm:"type:varchar(64);not null;column:name;comment:姓名"`
 	Password  string                `gorm:"type:varchar(256);not null;column:password;comment:密码"`
-	SystemID  int64                 `gorm:"type:int;not null;default 1;column:system_id;comment:系统id"`
 	DeletedAt soft_delete.DeletedAt `gorm:"uniqueIndex:idx_account_deleted;column:deleted_at;comment:删除时间"`
 }
 

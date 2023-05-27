@@ -10,10 +10,6 @@ type MetaName struct {
 	Name string `form:"name" json:"name"`
 }
 
-type MetaSystemID struct {
-	SystemID int64 `form:"system_id" json:"system_id"`
-}
-
 type MetaPage struct {
 	Page     int `form:"page,default=1" json:"page"`
 	PageSize int `form:"page_size,default=10" json:"page_size"`

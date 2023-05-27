@@ -31,7 +31,6 @@ type UserDetailReply struct {
 	ID          int64                   `json:"id"`
 	Name        string                  `json:"name"`
 	Account     string                  `json:"account"`
-	SystemId    int64                   `json:"system_id"`
 	Roles       []RoleDetailReply       `json:"roles,omitempty"`
 	Permissions []PermissionDetailReply `json:"permissions,omitempty"`
 }
