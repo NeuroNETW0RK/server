@@ -26,7 +26,7 @@ func (s *user) Create(c context.Context, db *gorm.DB, user *model.User) (err err
 	return
 }
 
-func (s *user) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (user *model.UserBo, err error) {
+func (s *user) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (user *model.UserDo, err error) {
 	err = db.WithContext(c).Scopes(opts...).First(&user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -37,7 +37,7 @@ func (s *user) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (u
 	return
 }
 
-func (s *user) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (users []model.UserBo, err error) {
+func (s *user) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (users []model.UserDo, err error) {
 	err = db.WithContext(c).Scopes(opts...).Find(&users).Error
 	if err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())

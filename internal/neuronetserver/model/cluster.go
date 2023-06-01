@@ -11,6 +11,6 @@ func (c Cluster) TableName() string {
 	return "cluster"
 }
 
-type ClusterBo struct {
+type ClusterDo struct {
 	Cluster
 }

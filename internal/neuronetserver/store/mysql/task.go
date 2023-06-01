@@ -26,7 +26,7 @@ func (s *task) Create(c context.Context, db *gorm.DB, task *model.Task) (err err
 	return
 }
 
-func (s *task) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (task *model.TaskBo, err error) {
+func (s *task) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (task *model.TaskDo, err error) {
 	err = db.WithContext(c).Scopes(opts...).First(&task).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -37,7 +37,7 @@ func (s *task) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (t
 	return
 }
 
-func (s *task) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (tasks []model.TaskBo, err error) {
+func (s *task) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (tasks []model.TaskDo, err error) {
 	err = db.WithContext(c).Scopes(opts...).Find(&tasks).Error
 	if err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())

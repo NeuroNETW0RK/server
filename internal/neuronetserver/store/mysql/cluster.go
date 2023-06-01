@@ -26,7 +26,7 @@ func (s *cluster) Create(c context.Context, db *gorm.DB, cluster *model.Cluster)
 	return
 }
 
-func (s *cluster) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (cluster *model.ClusterBo, err error) {
+func (s *cluster) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (cluster *model.ClusterDo, err error) {
 	err = db.WithContext(c).Scopes(opts...).First(&cluster).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -37,7 +37,7 @@ func (s *cluster) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions)
 	return
 }
 
-func (s *cluster) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (clusters []model.ClusterBo, err error) {
+func (s *cluster) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (clusters []model.ClusterDo, err error) {
 	err = db.WithContext(c).Scopes(opts...).Find(&clusters).Error
 	if err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())

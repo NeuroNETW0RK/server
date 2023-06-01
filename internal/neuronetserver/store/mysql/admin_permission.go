@@ -26,7 +26,7 @@ func (s *permission) Create(c context.Context, db *gorm.DB, permission *model.Pe
 	return
 }
 
-func (s *permission) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (permission *model.PermissionBo, err error) {
+func (s *permission) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (permission *model.PermissionDo, err error) {
 	err = db.WithContext(c).Scopes(opts...).First(&permission).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -37,7 +37,7 @@ func (s *permission) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptio
 	return
 }
 
-func (s *permission) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (permissions []model.PermissionBo, err error) {
+func (s *permission) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (permissions []model.PermissionDo, err error) {
 	err = db.WithContext(c).Scopes(opts...).Find(&permissions).Error
 	if err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())

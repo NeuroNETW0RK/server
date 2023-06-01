@@ -20,6 +20,18 @@ func NewMysqlDatastore() *DBDatastore {
 type DBDatastore struct {
 }
 
+func (d *DBDatastore) Repository() store.IRepository {
+	return newRepository()
+}
+
+func (d *DBDatastore) RepositoryImage() store.IRepositoryImage {
+	return newRepositoryImage()
+}
+
+func (d *DBDatastore) RepositoryImageTag() store.IRepositoryImageTag {
+	return newRepositoryImageTag()
+}
+
 func (d *DBDatastore) Cluster() store.ICluster {
 	return newCluster()
 }
@@ -30,10 +42,6 @@ func (d *DBDatastore) Task() store.ITask {
 
 func (d *DBDatastore) TaskResource() store.ITaskResource {
 	return newTaskResource()
-}
-
-func (d *DBDatastore) Image() store.IImage {
-	return newImage()
 }
 
 func (d *DBDatastore) UserRole() store.IUserRole {

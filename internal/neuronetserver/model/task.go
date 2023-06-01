@@ -37,6 +37,6 @@ func (t Task) TableName() string {
 	return "task"
 }
 
-type TaskBo struct {
+type TaskDo struct {
 	Task
 }

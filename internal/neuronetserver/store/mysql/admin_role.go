@@ -26,7 +26,7 @@ func (s *role) Create(c context.Context, db *gorm.DB, role *model.Role) (err err
 	return
 }
 
-func (s *role) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (role *model.RoleBo, err error) {
+func (s *role) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (role *model.RoleDo, err error) {
 	err = db.WithContext(c).Scopes(opts...).First(&role).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -37,7 +37,7 @@ func (s *role) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (r
 	return
 }
 
-func (s *role) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (roles []model.RoleBo, err error) {
+func (s *role) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (roles []model.RoleDo, err error) {
 	err = db.WithContext(c).Scopes(opts...).Find(&roles).Error
 	if err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())

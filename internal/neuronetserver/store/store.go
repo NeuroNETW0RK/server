@@ -11,7 +11,10 @@ type Factory interface {
 
 	Task() ITask
 	TaskResource() ITaskResource
-	Image() IImage
+
+	Repository() IRepository
+	RepositoryImage() IRepositoryImage
+	RepositoryImageTag() IRepositoryImageTag
 
 	Cluster() ICluster
 }

@@ -40,7 +40,6 @@ func (t TaskResource) TableName() string {
 	return "task_resource"
 }
 
-type TaskResourceBo struct {
+type TaskResourceDo struct {
 	TaskResource
-	Image
 }

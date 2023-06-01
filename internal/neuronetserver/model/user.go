@@ -21,9 +21,9 @@ func (u User) TableName() string {
 	return "admin_user"
 }
 
-type UserBo struct {
+type UserDo struct {
 	User
-	Roles []RoleBo `gorm:"many2many:admin_user_role;foreignKey:ID;joinForeignKey:user_id;References:ID;JoinReferences:role_id"`
+	Roles []RoleDo `gorm:"many2many:admin_user_role;foreignKey:ID;joinForeignKey:user_id;References:ID;JoinReferences:role_id"`
 }
 
 type UserRole struct {
@@ -47,9 +47,9 @@ func (r Role) TableName() string {
 	return "admin_role"
 }
 
-type RoleBo struct {
+type RoleDo struct {
 	Role
-	Permissions []PermissionBo `gorm:"many2many:admin_permission_role;foreignKey:ID;joinForeignKey:role_id;References:ID;JoinReferences:permission_id;column:permissions;comment:权限"`
+	Permissions []PermissionDo `gorm:"many2many:admin_permission_role;foreignKey:ID;joinForeignKey:role_id;References:ID;JoinReferences:permission_id;column:permissions;comment:权限"`
 	Users       []User         `gorm:"many2many:admin_user_role;foreignKey:ID;joinForeignKey:role_id;References:ID;JoinReferences:user_id;column:users;comment:用户"`
 }
 
@@ -75,7 +75,7 @@ func (p Permission) TableName() string {
 	return "admin_permission"
 }
 
-type PermissionBo struct {
+type PermissionDo struct {
 	Permission
 	Roles []Role `gorm:"many2many:admin_permission_role;foreignKey:ID;joinForeignKey:permission_id;References:ID;JoinReferences:role_id;column:roles;comment:角色"`
 }
