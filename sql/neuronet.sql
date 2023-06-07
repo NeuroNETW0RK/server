@@ -137,4 +137,49 @@ CREATE TABLE `cluster` (
 BEGIN;
 COMMIT;
 
+-- ----------------------------
+-- Table structure for image_build
+-- ----------------------------
+DROP TABLE IF EXISTS `image_build`;
+CREATE TABLE `image_build` (
+                               `id` bigint NOT NULL AUTO_INCREMENT,
+                               `image_id` bigint NOT NULL DEFAULT '0',
+                               `build_status` tinyint NOT NULL DEFAULT '0',
+                               `build_log` longtext COLLATE utf8mb4_general_ci NOT NULL,
+                               `build_user` bigint NOT NULL DEFAULT '0',
+                               `add_time` bigint NOT NULL,
+                               `update_time` bigint NOT NULL,
+                               PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Table structure for image_info
+-- ----------------------------
+CREATE TABLE `image_info` (
+                              `id` bigint NOT NULL AUTO_INCREMENT,
+                              `image_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+                              `build_type` tinyint NOT NULL DEFAULT '0' COMMENT '构建方式 1:from self 2docker file 3 harbor',
+                              `image_ext` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                              `image_user_for` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+                              `create_user` bigint NOT NULL DEFAULT '0',
+                              `update_user` bigint NOT NULL DEFAULT '0',
+                              `create_time` bigint NOT NULL DEFAULT '0',
+                              `update_time` bigint NOT NULL DEFAULT '0',
+                              PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ----------------------------
+-- Table structure for image_tag
+-- ----------------------------
+CREATE TABLE `image_tag` (
+                             `id` bigint NOT NULL AUTO_INCREMENT,
+                             `tag_name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+                             `tag_desc` varchar(2000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+                             `image_id` bigint NOT NULL DEFAULT '0',
+                             `create_user` bigint NOT NULL DEFAULT '0',
+                             `add_time` bigint NOT NULL DEFAULT '0',
+                             `update_time` bigint NOT NULL DEFAULT '0',
+                             PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
