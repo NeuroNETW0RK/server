@@ -5,9 +5,9 @@ import (
 	"neuronet/internal/neuronetserver/model"
 )
 
-func UserBoMapper(user model.UserBo) v1.UserDetailReply {
+func UserBoMapper(user model.UserDo) v1.UserDetailReply {
 	var (
-		permissionIDMap   = make(map[int64]model.PermissionBo)
+		permissionIDMap   = make(map[int64]model.PermissionDo)
 		permissionsDetail []v1.PermissionDetailReply
 		rolesDetail       []v1.RoleDetailReply
 	)

@@ -5,7 +5,7 @@ import (
 	"neuronet/internal/neuronetserver/model"
 )
 
-func RoleBoMapper(role model.RoleBo) v1.RoleDetailReply {
+func RoleBoMapper(role model.RoleDo) v1.RoleDetailReply {
 
 	var permissionsDetail []v1.PermissionDetailReply
 	for _, permission := range role.Permissions {

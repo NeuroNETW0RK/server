@@ -5,7 +5,7 @@ import (
 	"neuronet/internal/neuronetserver/model"
 )
 
-func PermissionBoMapper(permission model.PermissionBo) v1.PermissionDetailReply {
+func PermissionBoMapper(permission model.PermissionDo) v1.PermissionDetailReply {
 	return v1.PermissionDetailReply{
 		MetaID: v1.MetaID{
 			ID: permission.ID,
