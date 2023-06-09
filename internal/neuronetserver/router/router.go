@@ -1,15 +1,17 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"neuronet/internal/neuronetserver/controller/v1/cluster"
 	clusterresource "neuronet/internal/neuronetserver/controller/v1/cluster_resource"
+	"neuronet/internal/neuronetserver/controller/v1/image"
 	"neuronet/internal/neuronetserver/controller/v1/permission"
 	"neuronet/internal/neuronetserver/controller/v1/role"
 	"neuronet/internal/neuronetserver/controller/v1/user"
 	"neuronet/internal/neuronetserver/options"
 	"neuronet/internal/pkg/message"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func New(opts *options.Options) error {
@@ -77,5 +79,19 @@ func New(opts *options.Options) error {
 		clusterResourceGroup.GET("", clusterResourceController.AllNodes)
 	}
 
+	imageController := image.NewController(opts.Db, opts.StoreFactory)
+	imageGroup := versionGroup.Group("/image")
+	{
+		// image
+		imageGroup.GET("/list", imageController.GetList)
+		imageGroup.GET("/info/:image_id", imageController.Info)
+		imageGroup.POST("", imageController.Create)
+		imageGroup.DELETE("/:image_id", clusterController.Delete)
+		imageGroup.PUT("/:image_id", clusterController.Update)
+
+		// imageTag
+
+		// imageBuild
+	}
 	return nil
 }

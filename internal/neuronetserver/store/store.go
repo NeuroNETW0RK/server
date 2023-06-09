@@ -17,4 +17,5 @@ type Factory interface {
 	RepositoryImageTag() IRepositoryImageTag
 
 	Cluster() ICluster
+	Image() IImage
 }
