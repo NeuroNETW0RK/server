@@ -27,7 +27,7 @@ func (s *image) Create(c context.Context, db *gorm.DB, image *model.ImageInfo) (
 	return
 }
 
-func (s *image) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (image *model.ImageDo, err error) {
+func (s *image) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (image *model.ImageInfo, err error) {
 	err = db.WithContext(c).Scopes(opts...).First(&image).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -38,7 +38,7 @@ func (s *image) GetBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (
 	return
 }
 
-func (s *image) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (images []model.ImageDo, err error) {
+func (s *image) GetListBy(c context.Context, db *gorm.DB, opts ...store.DBOptions) (images []model.ImageInfo, err error) {
 	err = db.WithContext(c).Scopes(opts...).Find(&images).Error
 	if err != nil {
 		return nil, errors.WithCode(code.ErrDatabase, err.Error())
@@ -70,8 +70,8 @@ func (s *image) UpdateColumn(c context.Context, db *gorm.DB, name string, value 
 	return
 }
 
-func (s *image) Updates(c context.Context, db *gorm.DB, cluster *model.ImageInfo, opts ...store.DBOptions) (err error) {
-	err = db.WithContext(c).Scopes(opts...).Updates(&cluster).Error
+func (s *image) Updates(c context.Context, db *gorm.DB, imageInfo *model.ImageInfo, opts ...store.DBOptions) (err error) {
+	err = db.WithContext(c).Scopes(opts...).Updates(&imageInfo).Error
 	if err != nil {
 		return errors.WithCode(code.ErrDatabase, err.Error())
 	}

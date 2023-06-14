@@ -20,6 +20,18 @@ func NewMysqlDatastore() *DBDatastore {
 type DBDatastore struct {
 }
 
+func (d *DBDatastore) Image() store.IImage {
+	return newImage()
+}
+
+func (d *DBDatastore) ImageTag() store.IImageTag {
+	return newImageTag()
+}
+
+func (d *DBDatastore) ImageBuild() store.IImageBuild {
+	return newImageBuild()
+}
+
 func (d *DBDatastore) Repository() store.IRepository {
 	return newRepository()
 }

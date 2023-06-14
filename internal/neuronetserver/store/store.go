@@ -18,4 +18,6 @@ type Factory interface {
 
 	Cluster() ICluster
 	Image() IImage
+	ImageTag() IImageTag
+	ImageBuild() IImageBuild
 }

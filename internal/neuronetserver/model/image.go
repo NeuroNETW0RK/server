@@ -37,7 +37,3 @@ type ImageTag struct {
 func (m *ImageTag) TableName() string {
 	return "image_tag"
 }
-
-type ImageDo struct {
-	ImageInfo
-}

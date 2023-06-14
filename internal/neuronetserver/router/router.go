@@ -88,10 +88,24 @@ func New(opts *options.Options) error {
 		imageGroup.POST("", imageController.Create)
 		imageGroup.DELETE("/:image_id", clusterController.Delete)
 		imageGroup.PUT("/:image_id", clusterController.Update)
-
 		// imageTag
-
+		tagGroup := imageGroup.Group("/tag")
+		{
+			tagGroup.GET("/list", imageController.GetList)
+			imageGroup.GET("/info/:image_tag_id", imageController.Info)
+			imageGroup.POST("", imageController.Create)
+			imageGroup.DELETE("/:image_tag_id", clusterController.Delete)
+			imageGroup.PUT("/:image_tag_id", clusterController.Update)
+		}
 		// imageBuild
+		buildGroup := imageGroup.Group("/build")
+		{
+			buildGroup.GET("/list", imageController.GetList)
+			buildGroup.GET("/info/:image_build_id", imageController.Info)
+			buildGroup.POST("", imageController.Create)
+			buildGroup.DELETE("/:image_build_id", clusterController.Delete)
+			buildGroup.PUT("/:image_build_id", clusterController.Update)
+		}
 	}
 	return nil
 }
